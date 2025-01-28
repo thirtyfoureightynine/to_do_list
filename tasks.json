@@ -1,0 +1,14 @@
+[
+    {
+        "task": "laundry",
+        "completed": false
+    },
+    {
+        "task": "shopping",
+        "completed": true
+    },
+    {
+        "task": "applications",
+        "completed": false
+    }
+]
