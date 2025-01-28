@@ -22,6 +22,10 @@ A beautiful and user-friendly terminal-based to-do list application built with P
    ```bash
    python to_do_list.py
    ```
+   Or launch:
+   ```
+   run_todo.bat
+   ```
 
 ## Usage 📝
 
