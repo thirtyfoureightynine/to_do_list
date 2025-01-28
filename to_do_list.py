@@ -1,8 +1,14 @@
 import json
 import os
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.prompt import Prompt
+from rich.markdown import Markdown
 
 # --- Constants ---
 TASKS_FILE = "tasks.json"
+console = Console()
 
 # --- Helper Functions ---
 def load_tasks():
@@ -32,30 +38,42 @@ def save_tasks(tasks):
 
 def list_tasks(tasks):
     """
-    Print out the list of tasks with an index.
-    Also shows if a task is completed.
+    Display tasks in a beautiful table using Rich.
     """
     if not tasks:
-        print("\nYour to-do list is empty!\n")
+        console.print(Panel("✨ Your to-do list is empty! ✨", 
+                          style="cyan", 
+                          title="Tasks"))
         return
 
-    print("\nYour To-Do List:")
+    table = Table(title="📋 Your To-Do List", show_header=True, header_style="bold magenta")
+    table.add_column("#", style="dim", width=4)
+    table.add_column("Task", min_width=20)
+    table.add_column("Status", justify="center", width=10)
+
     for i, t in enumerate(tasks, start=1):
-        status = "✓" if t["completed"] else " "
-        print(f"{i}. [{status}] {t['task']}")
-    print()  # Newline for spacing
+        status = "✅" if t["completed"] else "⏳"
+        style = "dim" if t["completed"] else "none"
+        table.add_row(
+            str(i),
+            t["task"],
+            status,
+            style=style
+        )
+
+    console.print(table)
 
 def add_task(tasks):
     """
     Prompt the user to enter a new task and add it to the list.
     """
-    new_task = input("Enter a new task: ").strip()
+    new_task = Prompt.ask("✏️  Enter a new task").strip()
     if new_task:
         tasks.append({"task": new_task, "completed": False})
         save_tasks(tasks)
-        print(f"Added task: {new_task}")
+        console.print(f"✨ Added task: [green]{new_task}[/green]")
     else:
-        print("No task entered. Returning to main menu.")
+        console.print("[yellow]No task entered. Returning to main menu.[/yellow]")
 
 def complete_task(tasks):
     """
@@ -66,15 +84,15 @@ def complete_task(tasks):
         return
     
     try:
-        index = int(input("Enter the number of the task to mark as completed: "))
+        index = int(Prompt.ask("📌 Enter the number of the task to mark as completed"))
         if 1 <= index <= len(tasks):
             tasks[index - 1]["completed"] = True
             save_tasks(tasks)
-            print(f"Marked task #{index} as completed.")
+            console.print(f"✅ Marked task #{index} as completed!")
         else:
-            print("Invalid task number.")
+            console.print("[red]Invalid task number.[/red]")
     except ValueError:
-        print("Please enter a valid number.")
+        console.print("[red]Please enter a valid number.[/red]")
 
 def remove_task(tasks):
     """
@@ -85,32 +103,38 @@ def remove_task(tasks):
         return
 
     try:
-        index = int(input("Enter the number of the task to remove: "))
+        index = int(Prompt.ask("🗑️  Enter the number of the task to remove"))
         if 1 <= index <= len(tasks):
             removed = tasks.pop(index - 1)
             save_tasks(tasks)
-            print(f"Removed task: {removed['task']}")
+            console.print(f"🗑️  Removed task: [red]{removed['task']}[/red]")
         else:
-            print("Invalid task number.")
+            console.print("[red]Invalid task number.[/red]")
     except ValueError:
-        print("Please enter a valid number.")
+        console.print("[red]Please enter a valid number.[/red]")
+
+def display_menu():
+    """
+    Display the main menu using Rich styling.
+    """
+    console.print("\n[bold cyan]Menu[/bold cyan]")
+    console.print("1. [blue]View tasks[/blue] 📋")
+    console.print("2. [blue]Add a task[/blue] ✏️")
+    console.print("3. [blue]Mark a task as completed[/blue] ✅")
+    console.print("4. [blue]Remove a task[/blue] 🗑️")
+    console.print("5. [blue]Exit[/blue] 👋")
+    console.print()
 
 # --- Main Application Loop ---
 def main():
-    print("Welcome to the To-Do List App!")
+    console.print("\n✨ [bold yellow]Welcome to the To-Do List App![/bold yellow] ✨\n")
     
     while True:
         # Load tasks in each loop iteration to keep data fresh
         tasks = load_tasks()
-
-        print("\nMenu:")
-        print("1. View tasks")
-        print("2. Add a task")
-        print("3. Mark a task as completed")
-        print("4. Remove a task")
-        print("5. Exit")
-
-        choice = input("Select an option (1-5): ").strip()
+        
+        display_menu()
+        choice = Prompt.ask("Select an option", choices=["1", "2", "3", "4", "5"])
         
         if choice == "1":
             list_tasks(tasks)
@@ -121,10 +145,8 @@ def main():
         elif choice == "4":
             remove_task(tasks)
         elif choice == "5":
-            print("Goodbye!")
+            console.print("\n[bold cyan]👋 Goodbye! Have a great day![/bold cyan]\n")
             break
-        else:
-            print("Invalid choice. Please select a valid option.")
 
 if __name__ == "__main__":
     main()
